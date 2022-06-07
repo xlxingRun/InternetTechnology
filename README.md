@@ -455,7 +455,20 @@ HLS视频片段将索引到流媒体播放列表中，以便视频播放器了�
 
 ## 6. 斗鱼直播
 
-我点开网络查看器，没有发现数据包，只有大量的图片时使用http传输的，所以我猜测斗鱼的视频流是使用TCP或者UDP传输的，没有封装到http中来传输。
+我点开网络查看器，没有发现数据包，只有大量的图片时使用http传输的，所以我猜测斗鱼的视频流是使用TCP或者UDP传输的，没有封装到http中来传输。对于直播的业务，一旦建立链接，就像一根管道一样连续不断地推送流，客户端没有快进快退的操作，建立隧道的方式更适合应用场景。
+
+此外我发现斗鱼直播支持Flash播放，也搜到了一些关于斗鱼使用基于flv.js的H5播放器的相关文章。
+
+<center>
+    <img style="border-radius: 0.3125em;
+    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
+    src="fig/douyu.png">
+    <br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">图12-斗鱼支持Flash/H5播放</div>
+</center>
 
 ## 7 虎牙直播
 
@@ -470,220 +483,6 @@ HLS视频片段将索引到流媒体播放列表中，以便视频播放器了�
 此外，需要提醒的是，我只是使用网页进行简单地抓包，可能同一个平台，手机端和网页端采用不同的交付技术。但是HLS是可以支持多端的，并且拥有“指哪打哪”的优点，我认为长视频平台一定使用HLS或者DASH。
 
 之后，我需要再使用专门的抓包工具，抓取手机端的数据包，查看移动端交付技术方案。
-
-
-
-
-
----
-
-> https://datatracker.ietf.org/doc/rfc2326/
-
-> RTSP信息汇总
-
-[RFC2326](https://datatracker.ietf.org/doc/rfc2326/)
-
-[最详细的音视频流媒体传输协议-rtsp协议详解](https://zhuanlan.zhihu.com/p/478736595)
-
-[WOWZA-RTSP](https://www.wowza.com/blog/rtsp-the-real-time-streaming-protocol-explained)
-
-[RTSP – All You Need to Know About Real-Time Streaming Protocol](https://corp.kaltura.com/blog/rtsp-streaming/)
-
-RTSP由Real Networks和Netscape共同提出的如何有效地在IP网络上传输流媒体数据的应用层协议，该协议最早在1996年创立，并在rfc2326中对外公布。RTSP提供了一个可扩展的框架，以支持受控的、按需的实时数据传输，如音频和视频。数据源可以包括实时数据提要和存储的剪辑。该协议定义了一对多应用程序如何有效地通过IP网络传送多媒体数据。RTSP在体系结构上位于RTP和RTCP之上，它使用TCP和RTP完成数据传输。RTSP被用于建立的控制媒体流传输，它为多媒体服务扮演“网络远程控制”的角色。RTP不像http和ftp可完整地下载整个影视文件，它是以固定等数据率在网络上发送数据，客户端也是按照这种速度观看影视文件，当影视画面播放后，就不可以再重复播放，除非重新向服务端请求数据。如图1展示了RTSP的协议支持，需要注意的是RTSP主要使用RTP/RTCP传输数据，但是并不绑定。RTSP传输性能好，延时极低，但是该协议的播放兼容性差，当前的主要终端android和ios以及web浏览器都不支持，因此不应用在视频传输最后一公里。目前主要应用在一些实时视频流传输领域，包括：监控、无人机、闭路电视、IP摄像机等。
-
-播放兼容性：差，没有被广泛支持，很少被用来视频播放
-
-好处：低时延，无处不在的IP摄像机
-
-缺点：没有对体验质量和可伸缩性进行优化
-
-时延：<500ms
-
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
-    src="fig/RTSP协议.png">
-    <br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">图1-RTSP协议支持</div>
-</center>
-
-
-[WOWZA RTMP](https://www.wowza.com/blog/rtmp-streaming-real-time-messaging-protocol)
-
-[dacast](https://www.dacast.com/blog/rtmp-real-time-messaging-protocol/)
-
-RTMP英文全称Real Time Messaging Protocol实时消息传送协议，默认端口号1935。它是Adobe Systems公司为Flash播放器和服务器之间流数据传输开发的开放协议，flv是RTMP使用的封装格式。RTMP在播放器客户端和服务器端之间保持一个固定的连接，允许该协议充当管道，快速地将视频数据传输到查看器。RTMP是基于TCP来实现数据传输的，可靠性高。直到2010年代早期，Flash Player和RTMP一直是主要的流媒体交付机制。但是HTML5视频流、开放标准和自适应比特率传输最终在最后一公里传输时将RTMP流排挤出去。一是客户端需要安装Flash播放器，而Chrome、Edge、Firefox、Safari等主流浏览器纷纷不再支持flash。二是工业界现在主要支持HTTP协议，而RTMP传输的实时流是tcp数据包，和当下普遍使用CDN服务器不匹配，且有被防火墙过滤的风险。现在可以说Flash已经终结了，但是RTMP没有，RTMP编码器仍然是许多视频生产者的首选，在WOWZA的2021年视频流延迟报告中，高达76.6%的受访者使用它。换句话说，RTMP流媒体对于内容贡献来说是活着的，只是不是最后一公里的交付。
-
-- RTMP是一种实时流媒体协议，它将视频文件从编码器传输到在线视频托管平台。
-- RTMP原来在实时流中扮演的角色已经被HLS取代，但它现在扮演着另一个重要的角色。
-- AAC-LC是RTMP编码最好的音频编解码器，但也支持AAC。
-- H.264是RTMP编码最好的视频编解码器，但也支持MP4和x264。
-- 广播更喜欢使用RTMP流，因为低时延。
-
-RTSP和RTMP至今仍在使用，相较于以前的流媒体交付功能，它们现在扮演另一个重要的角色。
-
-HLS英文全称HTTP Live Streaming在线流传输协议，该协议是由美国苹果公司实现的基于HTTP的流数据传输协议，最早版本在2009发布，可以实现流媒体的直播和点播，主要为iOS系统服务。HLS实际上并不是真正的实时流协议，HLS协议在服务器端将数据流存储为连续的、短时长的MPEG-TS格式文件，客户端不断下载并解析播放这些小文件从而实现实时流效果。HLS协议由三部分构成：HTTP、M3U8、TS。这三部分中，HTTP是数据传输协议，M3U8是索引文件，TS是音视频媒体数据。可以认为，HLS是以点播流技术方式来实现实时流的协议。作为一种基于HTTP的技术，不需要流媒体服务器，所有的切换逻辑都在播放器上。
-
-HLS是当前最流行的流媒体传输协议，支持：
-
-> https://developer.apple.com/documentation/http_live_streaming?language=objc
-
-- 直播和预先录制的内容（视频点播）
-- 以多个不同比特率的多个备选流
-- 响应网络带宽变化的流的智能切换
-- 媒体加密和用户鉴权
-
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
-    src="fig/HLS component.png">
-    <br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">图3-HLS组成结构</div>
-</center>
-
-
-RTMP协议在相当一段时间占据了流媒体传输的主要地位，但是本身存在一定的安全问题，客户端去flash，服务上CDN，防火墙过滤等背景下，已经难以继续发展。相反，HLS适应了时代的发展，使用HTTP传输流媒体数据，但是其技术实现的基础也决定了其高时延，不能满足低时延需求，且ts切片造成了海量小文件，对存储和缓存都有一定的挑战。在这样的背景下，HTTP-FLV综合了RTMP和HLS的优点，成为当下一个重要的流媒体传输解决方案。值得一提的是，HTTP-FLV是非正式的标准，主要在中国的互联网公司采用。
-
-首先总结一下当前的流媒体传输环境：
-
-1. 主流浏览器不支持flash插件
-2. RTMP使用tcp协议传输流媒体数据，数据包可能会被防火墙过滤，不适应CDN
-3. HLS时延高，无法满足低时延需求
-4. FLV数据封装格式性能高，工业界服务器对FLV的支持度很高
-5. 在服务端，RTMP流转换为FLV，因为RTMP几乎是当前唯一的推流方式
-
-所有的HTTP-FLV流都是一个HTTP FLV地址，譬如：http://ossrs.net:8081/live/livestream.flv，但是流的形式却至少有三种：FLV文件、FLV伪流、FLV直播流。
-
-HTTP-FLV流媒体传输技术有多个版本，简单理解可以视为使用http封装tcp的RTMP协议（但不同于RTMPT），融合了RTMP和HLS的优点，使用http长连接传输数据包，而不是tcp长连接，可以做到和RTMP一样的时延，同时用http协议传输数据包，可以避免被防火墙过滤。视频封装格式为flv，bilibili推出的flv.js，可以使用h5标签替代flash播放器。总而言之，http-flv性能上和RTMP类似，使用http协议传输，易于当下流行的cdn服务器分发，并且免去被防火墙拦截的风险，flv.js播放器又解决了当下主流浏览器不支持flash插件的问题。唯一的不足就是在手机浏览器上的支持非常有限。
-
-> https://www.bilibili.com/read/cv855111?from=articleDetail
-
-此外还有一种流媒体传输技术是DASH（Dynamic Adaptive Streaming over HTTP），是一种在互联网上传送动态码率的Video Streaming技术，类似于苹果的HLS，DASH会通过media presentation description（MDP）将视频内容切片成一个很短的文件片段，每个切片都有多种不同的码率，DASH Client可以根据网络情况选择一个码率进行播放，支持在不同码率之间无缝切换。Youtube采用DASH，其网页端及移动APP都使用了DASH。DASH的其他采用者包括：Netflix，Hulu。
-
-DASH是由MPEG（Moving Picture Experts Group）组织制定，2010年开始启动，2011年11月发布Draft版本，2012年4月发布第一稿Version（ISO/IEC 23009-1:2012），2014年5月发布第二稿（ISO/IEC 23009-1:2014），最新稿（ISO/IEC 23009-3:2015）。 
-
-目前3GPP Release 10已经将DASH纳入其中；在HbbTV1.5中也支持DASH；DVB-DASH也将DASH纳入到DVB（ETSI TS 103 285 v.1.1.1）。目前DASH Industry Forum由发起厂家组成，致力于推荐DASH产品生态，将DASH产业化和业界最佳实践推向批量应用。
-
-<center>
-    <img style="border-radius: 0.3125em;
-    box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
-    src="fig/dash.jpg">
-    <br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">图3-DASH样例系统</div>
-</center>
-
-
-
-下面对以上提到的五种流媒体传输协议进行总结：
-
-|           | 数据传输        | 常规时延 | 码率自适应 | 基于切片 | 应用场景与兼容性                              | 标准制定       |
-| --------- | --------------- | -------- | ---------- | -------- | --------------------------------------------- | -------------- |
-| RTSP      | RTP/RTCP（UDP） | 500ms    | 否         | 否       | 监控、无人机、潜艇、遥控车、IPTV              | IETF RFC标准   |
-| RTMP      | TCP长连接       | <5s      | 否         | 否       | 直播推流、PC客户端、移动APP                   | Adobe          |
-| HLS       | HTTP短连接      | >10s     | 是         | 是       | 直播点播，原生支持Apple软件，支持绝大多数设备 | Apple          |
-| HTTP-FLV  | HTTP长连接      | <5s      | 是         | 否       | 直播、点播，QQ、微信、手机浏览器不支持        | 非标准协议     |
-| MPEG-DASH | HTTP短连接      | 5-10s    | 是         | 是       | 直播、点播，所有的设备都支持                  | 国际标准组MPEG |
-
-
-
-<hr style=" border:solid; width:100px; height:1px;" color=#000000 size=1">
-
-> https://blog.csdn.net/fanyun_01/article/details/121050196
-
-随着Internet的日益普及，在网络上传输的数据已经不在局限于文字和图形，而且包含大量的音频和视频。
-
-目前在网络上传输音频/视频（Audio/Video，简称A/V）等多媒体文件时，基本上只有**下载**和**流式传输**两种选择。通常来说，A/V文件占据的存储空间都比较大，在带宽受限的网络环境中下载可能要耗费数分钟甚至数小时，所以这种处理方法的延迟很大。如果换用流式传输的话，声音、影响、动画等多媒体文件由专门的流媒体服务器负责向用户连续、实时地发送，这样用户可以不必等到整个文件全部下载完毕，而只需要经过几秒钟的启动延时就可以了，当这些多媒体数据在客户机上播放时，文件的剩余部分将继续从流媒体服务器下载。
-
-流（Streaming）是近年来在Internet上出现的新概念，其定义非常广泛，主要是通过网络传输**多媒体数据**的总称。流媒体包含广义和狭义两种内涵：广义上的流媒体指的是使音频和视频形成稳定和连续的传输流和回放流的一系列技术、方法和协议的总称，即流媒体技术；狭义上的流媒体是相对于传统的下载-回放方式而言的，指的是一种从Internet上获取音频和视频等多媒体数据的新方法，它能够支持多媒体数据流的**实时传输**和**实时播放**。通过运用流媒体传输技术，服务器能够向客户机发送稳定和连续的多媒体数据流，客户机在接收数据流的同时以一个稳定的速率回放，而不用等待全部下载完之后再进行回放。
-
-由于受网络带宽、计算机处理能力和协议规范等方面的限制，要想从Internet上下载大量的音频和视频数据，无论从下载时间和存储空间上来讲都是不太现实的，而流媒体技术的出现则很好地解决了这一难题。目前实现流媒体传输主要有两种方法：**顺序流传输**和**实时流传输**，它们分别适合于不同的应用场合。
-
-
-
-
-
-付费平台B2C：爱奇艺、腾讯视频、优酷视频
-
-公开平台C2C：哔哩哔哩、YouTube
-
-<hr style=" border:solid; width:100px; height:1px;" color=#000000 size=1">
-
-# 一 中国在线视频平台可以分为三大梯队
-
-> 数据来源：《2020年中国网络视频行业分析报告-市场规模现状与投资前景预测》
-
-据数据统计显示：截至2019年6月，我国网络视频用户（含短视频）规模达7.59亿，较2018年底增长3391万，占网民整体的88.8%。其中长视频用户规模为6.39亿，占网民整体的74.7%；短视频用户规模为6.48亿，占网民整体的75.8%。
-
-2019年上半年，各大视频平台进一步细分内容产品类型，并对其进行专业化生产和运营，行业的娱乐内容生态逐渐形成。在用户细分时代，各大视频平台不断开拓新兴品类市场，更加注重内容的针对性和专业性。在网络视频内容领域，为迎合多样化的用户喜好，各大视频平台以电视剧、电影、综艺、动漫等核心品类为基础，不断向游戏、电竞、音乐等新兴品类拓展。此外，各大视频平台利用大数据、人工智能等技术，快速识别用户需求，实现内容的精准推送；同时，各大平台深入分析用户内容消费、商品消费的相关数据，还原用户真实需求，助力生产优质内容。例如，优酷的鱼脑系统已经被全面应用到网络剧、综艺节目的策划生产中。
-
-
-
-
-
-
-
-第一梯队以爱奇艺、腾讯视频、优酷为首，分别背靠百度、腾讯、阿里巴巴三大互联网巨头，平台内容成本投入较大，综合片源丰富，活跃用户居于前列。
-
-第二梯队包括以芒果TV、哔哩哔哩为代表的特色视频平台，其中前者背靠湖南卫视，拥有独家优质综艺内容，后者则通过“二次元”文化吸引了固定的用户群。
-
-第三梯队以PP视频、搜狐视频、咪咕视频等为代表，主要走差异化路线，如PP视频主打体育内容，由于整体资金投入相对较少，难以前两个梯队的平台抗衡。
-
-# 三 知名产品在线视频流传输协议调查
-
-## 1、爱奇艺
-
-通过抓包得知，爱奇艺视频播放使用的传输层技术是UDP，使用的是RTSP流媒体传输技术。
-
-## 2、腾讯视频
-
-HLS，可以看到 ts分片
-
-## 3、优酷视频
-
-HLS，可以看到ts分片，http传输mp2t格式的数据包
-
-## 4、哔哩哔哩
-
-HTTP-FLV && TCP
-
-[HTML5 FLV Player](https://github.com/bilibili/flv.js)
-
-[哔哩哔哩官方通告引入dash](https://www.bilibili.com/read/cv949156)
-
-An HTML5 Flash Video (FLV) Player written in pure JavaScript without Flash. LONG LIVE FLV!
-
-使用的视频流传输技术是http-flv，开源了flv.js，可以使用html5播放器播放flv视频，而不依赖flash插件。
-
-# 四 直播平台
-
-## 1 斗鱼直播
-
-网上信息：http-flv
-
-使用浏览器F12抓包，可以抓包m3u8，和ts
-
-<hr style=" border:solid; width:100px; height:1px;" color=#000000 size=1">
-## 2 虎牙直播
-## 2 虎牙直播
-
-网上信息：http-flv
-
-# 总结
-
-目前国内的互联网厂商的在线视频流媒体传输技术主要以https为主，有很多显而易见的优点，包括易于实现，扩展性好，免于被防火墙过滤，可以适配CDN。RTMP是专门设计的流媒体传输协议，具有很好的传输效率和用户体验，并且事实上很长一段时间内成为了行业标准，是一套成熟的解决方案，但是该协议为adobe的私有协议，想要使用需要支付专利费用，维护方面配置专门的服务器，客户端安装flash插件（当下flash已经被浏览器抛弃）等。
-
-在线视频的流媒体传输属于点播，对实时性要求不高，使用TCP技术门槛低，并且足够提供良好的服务。综合多种流媒体传输协议的优缺点，国内主流厂商普遍选择RTMP+HTTP混合的传输技术，即http-flv。在TCP/IP协议栈中，传输层协议是TCP，上层协议是http和rtmp。
-
-
 
 
 
